@@ -18,7 +18,7 @@ def save_results(links_pred, customer_payers, alberta_payers):
     pd_result = pd_result.merge(alberta_payers, how='left', left_on='_id', right_index=True)
     pd_result = pd_result.rename(columns={'Name': 'Name Kunde', 'name': 'Name Alberta'})
 
-    pd_result.to_csv('results_matches.csv')
+    pd_result.to_csv('results_matches_payer.csv')
   
   
 def get_full_indexer():

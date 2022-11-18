@@ -34,7 +34,7 @@ def save_results(links_pred, customer_pharmacys, alberta_pharmacys):
     del pd_result["institution_address"]
     del pd_result["Name_clean"]
 
-    pd_result.to_csv('results_matches.csv')
+    pd_result.to_csv('results_matches_pharmacy.csv')
   
    
 def get_block_indexer():
