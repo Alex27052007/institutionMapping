@@ -6,24 +6,7 @@ import pandas
 from recordlinkage.base import BaseCompareFeature
 import re
 import numpy as np
-
-parts_to_remove = '\.|\.|gGmbH|GmbH'
-
-
-def clean_name(row):
-    name_string = row['name']
-    if isinstance(name_string,str):
-        cleaned_name = re.sub(parts_to_remove, '', name_string)
-        return cleaned_name
-    else:
-        return ''
-def clean_Name(row):
-    name_string = row['Name']
-    if isinstance(name_string,str):
-        cleaned_name = re.sub(parts_to_remove, '', name_string)
-        return cleaned_name
-    else:
-        return ''
+from common_functions import clean_name 
 
 def save_results(links_pred, customer_hospitals, alberta_hospitals):
     pd_result = pandas.merge(customer_hospitals, links_pred, how="left", left_on='Nr', right_on='Nr')
@@ -44,7 +27,6 @@ def get_block_indexer():
 
 def get_comparer(methodName):
     comparer = recordlinkage.Compare()
-    #comparer.string('Name_clean', 'name_clean', method=methodName, label='institution_name')
     comparer.string('Adresse', 'address', method=methodName, label='institution_address')
     comparer.exact('PLZ', 'postalCode', label='institution_postalcode')
 
@@ -55,8 +37,9 @@ alberta_hospitals = pandas.read_csv('alberta/Alle_Kliniken_Alberta.csv',  sep=';
 customer_hospitals = pandas.read_csv('customer/hospital_mwm.csv',  sep=';', index_col='Nr', dtype={'Nr': str, 'PLZ': str})
 
 #Cleaning
-customer_hospitals['Name_clean'] = customer_hospitals.apply(clean_Name, axis=1)
-alberta_hospitals['name_clean'] = alberta_hospitals.apply(clean_name, axis=1)
+parts_to_remove = '\.|\.|gGmbH|GmbH'
+customer_hospitals['Name_clean'] = customer_hospitals.apply(lambda row: clean_name(row, parts_to_remove, 'Name'), axis=1)
+alberta_hospitals['name_clean'] = alberta_hospitals.apply(lambda row: clean_name(row, parts_to_remove, 'name'), axis=1)
 
 start_time = time.time()
 # Indexation step
