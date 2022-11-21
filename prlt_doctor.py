@@ -6,16 +6,8 @@ import pandas as pd
 from recordlinkage.base import BaseCompareFeature
 import re
 import numpy as np
+from common_functions import clean_name
 
-parts_to_remove = '\.|\.|Herr|Frau|Dr|Drs|med|medic|univ|Dipl|Prof|Priv|Doz|Praxis|Gemeinschaftspraxis|GP|rer|soc|Facharzt|Klinik|Kardiologie|Urologie|Schlaflabor|Hausarzt'
-
-def clean_Name(row):
-    name_string = row['Name']
-    if isinstance(name_string,str):
-        cleaned_name = re.sub(parts_to_remove, '', name_string)
-        return cleaned_name
-    else:
-        return ''
 
 def save_results(links_pred, customer_doctors, alberta_doctors):
     pd_result = pd.merge(customer_doctors, links_pred, how="left", left_on='Nr', right_on='Nr')
@@ -47,7 +39,8 @@ alberta_doctors = pd.read_csv('./alberta/Alle_Ärzte_Alberta.csv',  sep=';', ind
 customer_doctors = pd.read_csv('./customer/doctors_medhuman.csv',  sep=';', index_col='Nr', dtype={'Nr': str, 'PLZ': str})
 
 #Cleaning
-customer_doctors['Name_clean'] = customer_doctors.apply(clean_Name, axis=1)
+parts_to_remove = '\.|\.|Herr|Frau|Dr|Drs|med|medic|univ|Dipl|Prof|Priv|Doz|Praxis|Gemeinschaftspraxis|GP|rer|soc|Facharzt|Klinik|Kardiologie|Urologie|Schlaflabor|Hausarzt'
+customer_doctors['Name_clean'] = customer_doctors.apply(lambda row: clean_name(row, parts_to_remove, 'Name'), axis=1)
 
 start_time = time.time()
 # Indexation step

@@ -6,24 +6,9 @@ import pandas
 from recordlinkage.base import BaseCompareFeature
 import re
 import numpy as np
+from common_functions import clean_name 
 
-parts_to_remove = '\.|\.|gGmbH|GmbH'
 
-
-def clean_name(row):
-    name_string = row['name']
-    if isinstance(name_string,str):
-        cleaned_name = re.sub(parts_to_remove, '', name_string)
-        return cleaned_name
-    else:
-        return ''
-def clean_Name(row):
-    name_string = row['Name']
-    if isinstance(name_string,str):
-        cleaned_name = re.sub(parts_to_remove, '', name_string)
-        return cleaned_name
-    else:
-        return ''
 
 def save_results(links_pred, customer_pharmacys, alberta_pharmacys):
     pd_result = pandas.merge(customer_pharmacys, links_pred, how="left", left_on='Nr', right_on='Nr')
@@ -55,8 +40,9 @@ alberta_pharmacys = pandas.read_csv('alberta/Alle_Apotheken_Alberta.csv',  sep='
 customer_pharmacys = pandas.read_csv('customer/apotheke_alberta.csv',  sep=';', index_col='Nr', dtype={'Nr': str, 'PLZ': str})
 
 #Cleaning
-customer_pharmacys['Name_clean'] = customer_pharmacys.apply(clean_Name, axis=1)
-alberta_pharmacys['name_clean'] = alberta_pharmacys.apply(clean_name, axis=1)
+parts_to_remove = '\.|\.|gGmbH|GmbH'
+customer_pharmacys['Name_clean'] = customer_pharmacys.apply(lambda row: clean_name(row, parts_to_remove, 'Name'), axis=1)
+alberta_pharmacys['name_clean'] = alberta_pharmacys.apply(lambda row: clean_name(row, parts_to_remove, 'name'), axis=1)
 
 start_time = time.time()
 # Indexation step
