@@ -1,4 +1,3 @@
-import time
 import math
 import recordlinkage
 from recordlinkage.preprocessing import clean
@@ -32,7 +31,6 @@ def get_comparer(methodName):
 
     return comparer
 
-start_time = time.time()
 alberta_hospitals = pandas.read_csv('alberta/Alle_Kliniken_Alberta.csv',  sep=';', index_col='_id', dtype={ 'postalCode': str,})
 customer_hospitals = pandas.read_csv('customer/hospital_mwm.csv',  sep=';', index_col='Nr', dtype={'Nr': str, 'PLZ': str})
 
@@ -41,7 +39,6 @@ parts_to_remove = '\.|\.|gGmbH|GmbH'
 customer_hospitals['Name_clean'] = customer_hospitals.apply(lambda row: clean_name(row, parts_to_remove, 'Name'), axis=1)
 alberta_hospitals['name_clean'] = alberta_hospitals.apply(lambda row: clean_name(row, parts_to_remove, 'name'), axis=1)
 
-start_time = time.time()
 # Indexation step
 indexer = get_block_indexer()
 
@@ -59,8 +56,6 @@ scores = np.average(
 scored_comparison_vectors = comparison_vectors.assign(score=scores)
 
 matches = scored_comparison_vectors[scored_comparison_vectors['score'] >= 0.82]
-end_time = time.time()
-duration = end_time - start_time
 
 matches.to_csv('predictions_ho.csv')
 links_pred = pandas.read_csv('predictions_ho.csv', sep=',', index_col='Nr')
@@ -73,6 +68,5 @@ save_results(links_pred.copy(), customer_hospitals, alberta_hospitals)
 # Evaluation
 print('Count matches', count_matches)
 print('Count non-matches', count_nonmatches)
-print('Duration', end_time - start_time)
 
 

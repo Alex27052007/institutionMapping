@@ -1,5 +1,3 @@
-import time
-import math
 import recordlinkage
 from recordlinkage.index import Full
 from recordlinkage.preprocessing import clean
@@ -7,11 +5,6 @@ import pandas
 from recordlinkage.base import BaseCompareFeature
 import re
 import numpy as np
-
-parts_to_remove = '\.|\.|Die Gesundheitskasse|Private Krankenversicherung|Krankenversicherung|Die Gesundheitskasse für Sachsen und Thüringen'
-
-
-
 
 def save_results(links_pred, customer_payers, alberta_payers):
     pd_result = pandas.merge(customer_payers, links_pred, how="left", left_on='Nr', right_on='Nr')
@@ -37,12 +30,9 @@ def get_comparer(methodName):
 
     return comparer
 
-start_time = time.time()
 alberta_payers = pandas.read_csv('alberta/Alle_KK_Alberta.csv',  sep=';', index_col='_id')
 customer_payers = pandas.read_csv('customer/payer_medhuman.csv',  sep=';', index_col='Nr')
 
-#Cleaning
-start_time = time.time()
 # Indexation step
 indexer =  get_full_indexer()
 
@@ -59,8 +49,6 @@ scores = np.average(
 scored_comparison_vectors = comparison_vectors.assign(score=scores)
 
 matches = scored_comparison_vectors[scored_comparison_vectors['score'] >= 0.82]
-end_time = time.time()
-duration = end_time - start_time
 
 matches.to_csv('predictions_kk.csv')
 links_pred = pandas.read_csv('predictions_kk.csv', sep=',', index_col='Nr')
@@ -73,6 +61,3 @@ save_results(links_pred.copy(), customer_payers, alberta_payers)
 # Evaluation
 print('Count matches', count_matches)
 print('Count non-matches', count_nonmatches)
-print('Duration', end_time - start_time)
-
-

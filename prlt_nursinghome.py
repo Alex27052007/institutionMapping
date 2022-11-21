@@ -1,5 +1,3 @@
-import time
-import math
 import recordlinkage
 from recordlinkage.preprocessing import clean
 import pandas
@@ -79,7 +77,6 @@ def evaluate (methodname, weights, duration, method_results, predicted_links, tr
     print('fscore', fscore)   
 
 
-start_time = time.time()
 alberta_nursingHomes = pandas.read_csv('alberta/Alle_Pflegeheime_Alberta.csv',  sep=';', index_col='_id', dtype={ 'postalCode': str,})
 customer_nursingHomes = pandas.read_csv('customer/nursingHome_mwm.csv',  sep=';', index_col='Nr', dtype={'Nr': str, 'PLZ': str})
 
@@ -88,7 +85,6 @@ parts_to_remove = '\.|\.|gGmbH|GmbH|Diakonie|Caritas|Altenpflegeheim|Seniorenzen
 customer_nursingHomes['Name_clean'] = customer_nursingHomes.apply(lambda row: clean_name(row, parts_to_remove, 'Name'), axis=1)
 alberta_nursingHomes['name_clean'] = alberta_nursingHomes.apply(lambda row: clean_name(row, parts_to_remove, 'name'), axis=1)
 
-start_time = time.time()
 # Indexation step
 indexer = get_block_indexer()
 
@@ -106,8 +102,6 @@ scores = np.average(
 scored_comparison_vectors = comparison_vectors.assign(score=scores)
 
 matches = scored_comparison_vectors[scored_comparison_vectors['score'] >= 0.68]
-end_time = time.time()
-duration = end_time - start_time
 
 matches.to_csv('predictions_nh.csv')
 links_pred = pandas.read_csv('predictions_nh.csv', sep=',', index_col='Nr')
@@ -120,6 +114,5 @@ save_results(links_pred.copy(), customer_nursingHomes, alberta_nursingHomes)
 # Evaluation
 print('Count matches', count_matches)
 print('Count non-matches', count_nonmatches)
-print('Duration', end_time - start_time)
 
 
