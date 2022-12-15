@@ -4,32 +4,15 @@ import pandas
 from recordlinkage.base import BaseCompareFeature
 import re
 import numpy as np
-from common_functions import clean_name 
+from common_functions import clean_name, save_results 
 
-
-def save_results(links_pred, customer_nursingServices, alberta_nursingServices):
-    pd_result = pandas.merge(customer_nursingServices, links_pred, how="left", left_on='Nr', right_on='Nr')
-    pd_result = pd_result.merge(alberta_nursingServices, how='left', left_on='_id', right_index=True)
-    pd_result = pd_result.rename(columns={'Name': 'Name Kunde', 'Adresse': 'Adresse Kunde', 'PLZ': 'PLZ Kunde', 'Ort': 'Ort Kunde', 
-    'name': 'Name Alberta', 'address': 'Adresse Alberta', 'postalCode': 'PLZ Alberta', 'city': 'Ort Alberta'})
-    #del pd_result["institution_name"]
-    del pd_result["institution_address"]
-    del pd_result["Name_clean"]
-
-    pd_result.to_csv('results_matches_nursingservice.csv', encoding='utf-8')
-  
-   
+ 
 def get_block_indexer():
    indexer = recordlinkage.Index()
    indexer.block(left_on='Adresse', right_on='address')
    indexer.block(left_on='PLZ', right_on='postalCode')
    return indexer
 
-def get_sorted_neighbourhood_indexer ():
-   indexer = recordlinkage.SortedNeighbourhoodIndex(
-   left_on='PLZ', right_on='postalCode', window=9
-   )
-   return indexer
 def get_comparer(methodName):
     comparer = recordlinkage.Compare()
     #comparer.string('Name_clean', 'name_clean', method=methodName, label='institution_name')
@@ -39,7 +22,7 @@ def get_comparer(methodName):
     return comparer
 
 alberta_nursingServices = pandas.read_csv('alberta/Alle_Pflegedienste_Alberta.csv',  sep=';', index_col='_id', dtype={ 'postalCode': str,})
-customer_nursingServices = pandas.read_csv('customer/nursingService_mwm.csv',  sep=';', index_col='Nr', dtype={'Nr': str, 'PLZ': str})
+customer_nursingServices = pandas.read_csv('customer/pflegedienste_amacuro.csv',  sep=';', index_col='Nr', dtype={'Nr': str, 'PLZ': str})
 
 #Cleaning
 parts_to_remove = '\.|\.|gGmbH|GmbH|Diakonie|Caritas|Altenpflegeheim|Seniorenzentrum|Caritas|Pflegeheim|Seniorenheim|Senioren- und Pflegezentrum|Seniorenhaus|Seniorenpflegeheim|AWO|ASB|Pflegezentrum|BRK|Altenheim|Seniorenwohnheim|Seniorenhaus|Seniorendomizil'
@@ -70,7 +53,7 @@ links_pred = pandas.read_csv('predictions_ns.csv', sep=',', index_col='Nr')
 count_matches = len(links_pred)
 count_nonmatches = len(customer_nursingServices) - len(links_pred)
 
-save_results(links_pred.copy(), customer_nursingServices, alberta_nursingServices)
+save_results(links_pred.copy(), customer_nursingServices, alberta_nursingServices, 'nursingService')
 
 # Evaluation
 print('Count matches', count_matches)
